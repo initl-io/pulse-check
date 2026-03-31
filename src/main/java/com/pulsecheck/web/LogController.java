@@ -75,6 +75,6 @@ public class LogController {
     @GetMapping("/status")
     public ResponseEntity<?> status() {
         return ResponseEntity.ok(
-                java.util.Map.of("activeTailConnections", logTailService.getActiveConnections()));
+                java.util.Collections.singletonMap("activeTailConnections", logTailService.getActiveConnections()));
     }
 }

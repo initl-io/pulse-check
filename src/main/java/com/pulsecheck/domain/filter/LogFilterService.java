@@ -4,6 +4,7 @@ import com.pulsecheck.config.AppProperties;
 import com.pulsecheck.domain.exception.ExceptionSummary;
 import com.pulsecheck.domain.masking.LogMaskingService;
 import com.pulsecheck.security.PathSecurityService;
+import javax.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

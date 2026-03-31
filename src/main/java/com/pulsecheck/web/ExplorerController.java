@@ -10,7 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
+import java.util.Collections;
 
 @Controller
 @RequiredArgsConstructor
@@ -50,6 +50,6 @@ public class ExplorerController {
     @ResponseBody
     public ResponseEntity<?> deleteRoot(@PathVariable Long id) {
         pathSecurityService.removeRoot(id);
-        return ResponseEntity.ok(Map.of("deleted", id));
+        return ResponseEntity.ok(Collections.singletonMap("deleted", id));
     }
 }
