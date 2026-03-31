@@ -1,0 +1,42 @@
+spring:
+  port: 9876
+  config:
+    import: "optional:file:.env"
+  datasource:
+    url: jdbc:h2:file:./data/pulsecheck;AUTO_SERVER=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    open-in-view: false
+
+pulsecheck:
+  default-log-path: /temp/logs/
+  max-result-lines: 10000
+
+  # ── 인증 계정 (변경 필수) ──────────────────────────────
+  security:
+    username: admin
+    password: a123456*
+
+  # ── SSE 리소스 쿼터 ────────────────────────────────────
+  sse:
+    max-connections: 10
+    timeout-minutes: 30
+
+  # ── 로그 파싱 정규식 (application.yml에서 관리) ────────
+  patterns:
+    timestamp:   "((?:^|\\s)\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?|\\d{4}-\\d{2}-\\d{2}[T ]\\d{2}:\\d{2}:\\d{2})"
+    level:       "\\b(TRACE|DEBUG|INFO|WARN|ERROR|FATAL)\\b"
+    duration-ms: "\\((\\d{1,6})ms\\)"
+    exception:   "([\\w.$]+Exception|[\\w.$]+Error)(?::\\s*(.*))?"
+
+server:
+  port: 8080

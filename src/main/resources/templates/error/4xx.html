@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="'[' + ${status} + '] PulseCheck'">4xx — PulseCheck</title>
+  <th:block th:replace="~{fragments/error-base :: errorHead}"/>
+</head>
+<body>
+<div class="err-wrap">
+  <div class="px-card px-card-yellow">
+    <div class="err-code err-code-yellow glitch" th:text="${status}">4xx</div>
+    <div class="err-title" style="color:#ffd700">CLIENT ERROR</div>
+
+    <hr class="px-hr px-hr-yellow"/>
+
+    <p style="font-size:12px;color:#998800;margin:0 0 12px" th:text="${error}">Bad Request</p>
+
+    <div class="err-detail">
+      <span style="color:#5a4d1a">PATH&nbsp;:</span>
+      <span th:text="${path}">unknown</span><br/>
+      <span style="color:#5a4d1a">STATUS:</span>
+      <span th:text="${status + ' ' + error}">4xx</span>
+    </div>
+
+    <hr class="px-hr px-hr-yellow"/>
+    <div style="display:flex;gap:12px;justify-content:center">
+      <a href="/" class="px-btn">▶ HOME</a>
+      <a href="javascript:history.back()" class="px-btn" style="color:#ffd700;border-color:#5a4d1a;background:#0f0d02;box-shadow:3px 3px 0 #2e2a0a">◀ BACK</a>
+    </div>
+  </div>
+  <div class="err-footer">
+    PULSECHECK&nbsp;|&nbsp;
+    <span th:text="${status}">4xx</span>&nbsp;|&nbsp;
+    <span th:text="${#temporals.format(#temporals.createNow(), 'HH:mm:ss')}">--:--:--</span>
+    <span class="blink">▋</span>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title th:text="'[' + ${status} + '] PulseCheck'">5xx — PulseCheck</title>
+  <th:block th:replace="~{fragments/error-base :: errorHead}"/>
+</head>
+<body>
+<div class="err-wrap">
+  <div class="px-card px-card-red">
+    <div class="err-code err-code-red glitch" th:text="${status}">5xx</div>
+    <div class="err-title" style="color:#ff4d6a">SERVER ERROR</div>
+
+    <hr class="px-hr px-hr-red"/>
+
+    <p style="font-size:12px;color:#7a3344;margin:0 0 12px" th:text="${error}">Internal Server Error</p>
+
+    <div class="err-detail" style="border-color:#2d0a15;background:#0a0105"
+         th:if="${message != null and !#strings.isEmpty(message)}">
+      <span style="color:#4d1a26">ERROR :</span>
+      <span style="color:#7a3344" th:text="${message}">error detail</span>
+    </div>
+
+    <div class="err-detail" style="border-color:#2d0a15;background:#0a0105;margin-top:4px">
+      <span style="color:#4d1a26">PATH&nbsp;:</span>
+      <span th:text="${path}" style="color:#7a3344">unknown</span><br/>
+      <span style="color:#4d1a26">STATUS:</span>
+      <span style="color:#ff4d6a" th:text="${status + ' ' + error}">5xx</span>
+    </div>
+
+    <hr class="px-hr px-hr-red"/>
+    <div style="display:flex;gap:12px;justify-content:center">
+      <a href="/" class="px-btn">▶ HOME</a>
+      <a href="javascript:location.reload()" class="px-btn px-btn-red">↺ RETRY</a>
+    </div>
+  </div>
+  <div class="err-footer" style="color:#2d0a14">
+    SYSTEM ERROR&nbsp;|&nbsp;
+    <span th:text="${status}">5xx</span>&nbsp;|&nbsp;
+    <span th:text="${#temporals.format(#temporals.createNow(), 'HH:mm:ss')}">--:--:--</span>
+    <span class="blink" style="color:#5a1a2d">▋</span>
+  </div>
+</div>
+</body>
+</html>

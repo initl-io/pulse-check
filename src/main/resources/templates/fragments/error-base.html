@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<!-- 에러 페이지 공통 CSS 프래그먼트 — 직접 렌더링하지 않음 -->
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<th:block th:fragment="errorHead">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/galmuri@latest/dist/galmuri.css"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; image-rendering: pixelated; }
+    html { font-size: 13px !important; -webkit-font-smoothing: none !important; font-smooth: never !important; }
+    *, p, span, div, a, button { font-family: 'Galmuri14','Courier New',monospace !important; }
+
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 40%, #061006 0%, #010301 100%);
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: #3dcc5c;
+    }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background: repeating-linear-gradient(0deg,transparent 0,transparent 2px,rgba(0,0,0,0.2) 2px,rgba(0,0,0,0.2) 4px);
+      pointer-events: none; z-index: 0;
+    }
+    body::after {
+      content: ''; position: fixed; inset: 0;
+      background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.6) 100%);
+      pointer-events: none; z-index: 0;
+    }
+
+    .err-wrap {
+      position: relative; z-index: 1;
+      display: flex; flex-direction: column; align-items: center; gap: 20px;
+      padding: 24px;
+    }
+
+    /* 픽셀 패널 */
+    .px-card {
+      background: #030803;
+      border: 3px solid #1a3d1a;
+      box-shadow: 0 0 0 1px #010301, 0 0 0 5px #2d5a2d,
+                  0 0 30px rgba(0,200,50,0.08), inset 0 0 60px rgba(0,0,0,0.7);
+      padding: 32px 40px;
+      max-width: 540px; width: 100%;
+      text-align: center;
+    }
+    .px-card-red {
+      border-color: #5a1a2d !important;
+      box-shadow: 0 0 0 1px #010301, 0 0 0 5px #8c2d3d,
+                  0 0 30px rgba(255,0,50,0.08), inset 0 0 60px rgba(0,0,0,0.7) !important;
+    }
+    .px-card-yellow {
+      border-color: #5a4d1a !important;
+      box-shadow: 0 0 0 1px #010301, 0 0 0 5px #8c7a2d,
+                  0 0 30px rgba(255,200,0,0.06), inset 0 0 60px rgba(0,0,0,0.7) !important;
+    }
+
+    /* 에러 코드 (큰 숫자) */
+    .err-code {
+      font-family: 'Press Start 2P', monospace !important;
+      font-size: 48px;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .err-code-green  { color: #33ff57; text-shadow: 0 0 16px #33ff57, 0 0 40px rgba(51,255,87,0.3); }
+    .err-code-red    { color: #ff3355; text-shadow: 0 0 16px #ff3355, 0 0 40px rgba(255,51,85,0.3); }
+    .err-code-yellow { color: #ffd700; text-shadow: 0 0 16px #ffd700, 0 0 40px rgba(255,215,0,0.3); }
+
+    /* 에러 타이틀 */
+    .err-title {
+      font-family: 'Press Start 2P', monospace !important;
+      font-size: 11px; letter-spacing: 2px; margin-bottom: 20px;
+    }
+
+    /* 구분선 */
+    .px-hr { border: none; border-top: 2px solid #1a3d1a; box-shadow: 0 1px 0 #0a1e0a; margin: 16px 0; }
+    .px-hr-red    { border-top-color: #3d0a18; box-shadow: 0 1px 0 #200509; }
+    .px-hr-yellow { border-top-color: #3d3a0a; box-shadow: 0 1px 0 #202009; }
+
+    /* 상세 메시지 */
+    .err-detail {
+      font-size: 11px; color: #1a4d1a; line-height: 1.8;
+      background: #010401; border: 1px solid #0d2e0d;
+      padding: 8px 12px; text-align: left; word-break: break-all;
+    }
+
+    /* 버튼 */
+    .px-btn {
+      font-family: 'Galmuri14', monospace !important; font-size: 12px !important;
+      background: #050f05; color: #4dff80; border: 2px solid #2d5a2d;
+      padding: 6px 16px; cursor: pointer; box-shadow: 3px 3px 0 #0d2e0d;
+      text-decoration: none; display: inline-block;
+    }
+    .px-btn:hover  { background: #0a1e0a; border-color: #33ff57; color: #80ff99; }
+    .px-btn:active { box-shadow: none; transform: translate(3px,3px); }
+    .px-btn-red    { background: #120205; color: #ff4d6a; border-color: #5a1a2d; box-shadow: 3px 3px 0 #2e0a14; }
+    .px-btn-red:hover { color: #ff8099; border-color: #ff3355; }
+
+    /* ASCII 아트 영역 */
+    .ascii-art {
+      font-family: 'Press Start 2P', monospace !important;
+      font-size: 7px; line-height: 1.8; letter-spacing: 1px;
+    }
+
+    /* 글리치 애니메이션 (에러 코드) */
+    @keyframes glitch {
+      0%,100% { transform: none; opacity: 1; }
+      20%     { transform: skewX(-3deg); opacity: 0.8; }
+      40%     { transform: skewX(2deg) translateX(2px); }
+      60%     { transform: none; }
+      80%     { transform: translateX(-2px); opacity: 0.9; }
+    }
+    .glitch { animation: glitch 4s step-end infinite; }
+
+    /* 깜빡임 */
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+    .blink { animation: blink 0.8s step-end infinite; }
+
+    /* 하단 footer */
+    .err-footer {
+      font-family: 'Press Start 2P', monospace !important;
+      font-size: 6px; color: #0d2e0d; letter-spacing: 1px; text-align: center;
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #010301; }
+    ::-webkit-scrollbar-thumb { background: #1a5a1a; }
+  </style>
+</th:block>
+</head>
+<body></body>
+</html>

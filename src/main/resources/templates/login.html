@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PulseCheck — Login</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/galmuri@latest/dist/galmuri.css"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"/>
+  <link rel="stylesheet" href="https://unpkg.com/nes.css@2.3.0/css/nes.min.css"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      image-rendering: pixelated;
+    }
+    html {
+      font-size: 13px !important;
+      -webkit-font-smoothing: none !important;
+      font-smooth: never !important;
+    }
+    body {
+      font-family: 'Galmuri14', 'Courier New', monospace !important;
+      background: radial-gradient(ellipse 80% 60% at 50% 40%, #061006 0%, #010301 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+    }
+
+    /* Scanlines on body */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg, transparent 0px, transparent 2px,
+        rgba(0,0,0,0.20) 2px, rgba(0,0,0,0.20) 4px
+      );
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .login-wrap {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+    }
+
+    /* ── 픽셀 패널 ── */
+    .px-card {
+      background: #030803;
+      border: 3px solid #1a3d1a;
+      box-shadow:
+        0 0 0 1px #010301,
+        0 0 0 5px #2d5a2d,
+        0 0 30px rgba(0,200,50,0.10),
+        inset 0 0 60px rgba(0,0,0,0.7);
+      padding: 36px 40px;
+      width: 380px;
+    }
+
+    /* ── 로고 ── */
+    .logo {
+      font-family: 'Press Start 2P', monospace !important;
+      font-size: 12px;
+      color: #33ff57;
+      text-shadow: 0 0 10px #33ff57, 0 0 24px rgba(51,255,87,0.4);
+      text-align: center;
+      margin-bottom: 4px;
+    }
+    .logo-red { color: #ff3355; text-shadow: 0 0 10px #ff3355; }
+
+    .subtitle {
+      font-family: 'Press Start 2P', monospace !important;
+      font-size: 6px;
+      color: #1a6b2d;
+      text-align: center;
+      letter-spacing: 2px;
+      margin-bottom: 28px;
+    }
+
+    /* ── 분리선 ── */
+    .px-hr {
+      border: none;
+      border-top: 2px solid #1a3d1a;
+      box-shadow: 0 1px 0 #0a1e0a;
+      margin: 20px 0;
+    }
+
+    /* ── 폼 요소 ── */
+    .field-label {
+      font-family: 'Press Start 2P', monospace !important;
+      font-size: 7px;
+      color: #1a6b2d;
+      letter-spacing: 1px;
+      display: block;
+      margin-bottom: 6px;
+    }
+    .px-input {
+      font-family: 'Galmuri14', monospace !important;
+      font-size: 13px !important;
+      background: #010401;
+      color: #4dff80;
+      border: 2px solid #1a3d1a;
+      padding: 6px 10px;
+      outline: none;
+      caret-color: #33ff57;
+      width: 100%;
+      display: block;
+    }
+    .px-input:focus { border-color: #33ff57; box-shadow: 0 0 10px rgba(51,255,87,0.2); }
+    .px-input::placeholder { color: #1a4d1a; }
+
+    /* ── 버튼 ── */
+    .px-btn {
+      font-family: 'Galmuri14', monospace !important;
+      font-size: 13px !important;
+      background: #050f05;
+      color: #4dff80;
+      border: 2px solid #2d5a2d;
+      padding: 8px 0;
+      cursor: pointer;
+      box-shadow: 4px 4px 0 #0d2e0d;
+      width: 100%;
+      letter-spacing: 2px;
+      transition: none;
+      margin-top: 20px;
+      text-transform: uppercase;
+    }
+    .px-btn:hover  { background: #0a1e0a; border-color: #33ff57; color: #80ff99; }
+    .px-btn:active { box-shadow: none; transform: translate(4px,4px); }
+
+    /* ── 알림 메시지 ── */
+    .px-alert {
+      font-size: 11px;
+      padding: 6px 10px;
+      border: 2px solid;
+      margin-bottom: 14px;
+    }
+    .alert-error  { color: #ff4d6a; border-color: #5a1a2d; background: #0f0107; }
+    .alert-success{ color: #4dff80; border-color: #1a5a2d; background: #010f01; }
+
+    /* ── 터미널 커서 깜빡임 ── */
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+    .cursor { display:inline-block; color:#33ff57; animation: blink 0.8s step-end infinite; }
+
+    /* ── 픽셀 로딩 도트 ── */
+    @keyframes dot1 { 0%,66%,100%{opacity:0} 33%{opacity:1} }
+    @keyframes dot2 { 0%,33%,100%{opacity:0} 66%{opacity:1} }
+    @keyframes dot3 { 0%,66%{opacity:0} 100%{opacity:1} }
+    .dot1{animation:dot1 1.2s infinite} .dot2{animation:dot2 1.2s infinite} .dot3{animation:dot3 1.2s infinite}
+
+    /* ── 하단 보안 배지 ── */
+    .sec-badge {
+      font-family: 'Press Start 2P', monospace !important;
+      font-size: 6px;
+      color: #1a3d1a;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+
+<body>
+<div class="login-wrap">
+
+  <!-- 상단 ASCII 아트 장식 -->
+  <div style="font-family:'Press Start 2P',monospace;font-size:7px;color:#0d2e0d;text-align:center;line-height:1.8;letter-spacing:1px">
+    ┌──────────────────────────┐<br/>
+    │  SERVER LOG ANALYZER SYS │<br/>
+    │  ACCESS CONTROL TERMINAL │<br/>
+    └──────────────────────────┘
+  </div>
+
+  <!-- 로그인 카드 -->
+  <div class="px-card">
+
+    <div class="logo">⚡ PULSE<span class="logo-red">CHECK</span></div>
+    <div class="subtitle">USER ACCESS TERMINAL v1.0 <span class="cursor">▋</span></div>
+
+    <hr class="px-hr"/>
+
+    <!-- 에러 메시지 -->
+    <div th:if="${param.error}" class="px-alert alert-error">
+      ✕ AUTHENTICATION FAILED
+    </div>
+    <!-- 로그아웃 메시지 -->
+    <div th:if="${param.logout}" class="px-alert alert-success">
+      ✓ SESSION TERMINATED
+    </div>
+
+    <!-- 로그인 폼 (th:action이 CSRF 토큰 자동 삽입) -->
+    <form th:action="@{/login}" method="post" onsubmit="handleSubmit(this)">
+
+      <div style="margin-bottom:14px">
+        <label class="field-label" for="username">LOGIN ID:</label>
+        <input id="username" name="username" type="text"
+               class="px-input" placeholder="enter username"
+               autocomplete="username" autofocus required/>
+      </div>
+
+      <div>
+        <label class="field-label" for="password">PASSWORD:</label>
+        <input id="password" name="password" type="password"
+               class="px-input" placeholder="enter password"
+               autocomplete="current-password" required/>
+      </div>
+
+      <button type="submit" class="px-btn" id="submitBtn">
+        ▶ AUTHENTICATE
+      </button>
+    </form>
+
+    <hr class="px-hr"/>
+
+    <div class="sec-badge">
+      🔒 PATH-TRAVERSAL PROTECTED&nbsp;&nbsp;|&nbsp;&nbsp;BCrypt AUTH
+    </div>
+  </div>
+
+  <!-- 하단 장식 -->
+  <div style="font-family:'Press Start 2P',monospace;font-size:6px;color:#0d2e0d;letter-spacing:1px">
+    CONNECTING<span class="dot1">.</span><span class="dot2">.</span><span class="dot3">.</span>
+    &nbsp;&nbsp;PULSE CHECK SYSTEMS
+  </div>
+</div>
+
+<script>
+function handleSubmit(form) {
+  const btn = document.getElementById('submitBtn');
+  btn.textContent = '▶ AUTHENTICATING...';
+  btn.disabled = true;
+  btn.style.color = '#1a4d1a';
+  // form submit은 그대로 진행
+  return true;
+}
+// Enter 키 처리
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('submitBtn').click();
+});
+</script>
+</body>
+</html>

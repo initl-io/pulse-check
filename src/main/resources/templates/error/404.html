@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>404 — PulseCheck</title>
+  <th:block th:replace="~{fragments/error-base :: errorHead}"/>
+</head>
+<body>
+<div class="err-wrap">
+
+  <div class="px-card">
+    <!-- 에러 코드 -->
+    <div class="err-code err-code-yellow glitch">404</div>
+    <div class="err-title" style="color:#ffd700">SIGNAL NOT FOUND</div>
+
+    <div class="ascii-art" style="color:#3d3a0a;margin-bottom:16px">
+      ┌─────────────────────────┐<br/>
+      │  ░░░ FILE MISSING ░░░  │<br/>
+      │   ?  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  ?  │<br/>
+      │  ░░░░░░░░░░░░░░░░░░░░  │<br/>
+      └─────────────────────────┘
+    </div>
+
+    <hr class="px-hr px-hr-yellow"/>
+
+    <p style="font-size:12px;color:#998800;margin:0 0 12px">
+      요청하신 경로를 찾을 수 없습니다.
+    </p>
+
+    <div class="err-detail">
+      <span style="color:#5a4d1a">PATH&nbsp;:</span>
+      <span th:text="${path}">unknown</span><br/>
+      <span style="color:#5a4d1a">STATUS:</span> 404 Not Found
+    </div>
+
+    <hr class="px-hr px-hr-yellow"/>
+
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <a href="/" class="px-btn">▶ HOME</a>
+      <a href="javascript:history.back()" class="px-btn" style="color:#ffd700;border-color:#5a4d1a;background:#0f0d02;box-shadow:3px 3px 0 #2e2a0a">◀ BACK</a>
+    </div>
+  </div>
+
+  <div class="err-footer">
+    PULSECHECK SYSTEM&nbsp;&nbsp;|&nbsp;&nbsp;ERROR CODE 404&nbsp;&nbsp;|&nbsp;&nbsp;
+    <span th:text="${#temporals.format(#temporals.createNow(), 'HH:mm:ss')}">--:--:--</span>
+    <span class="blink">▋</span>
+  </div>
+</div>
+</body>
+</html>

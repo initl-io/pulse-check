@@ -1,0 +1,28 @@
+# Gradle
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/resources/gradle.properties
+
+# IntelliJ IDEA
+.idea
+*.iws
+*.iml
+*.ipr
+out/
+
+# VS Code
+.vscode/
+
+# Logs
+logs/
+*.log
+
+# Database
+data/
+
+# OS
+.DS_Store
+
+# Environment
+.env

@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PulseCheck</title>
+
+  <!-- ① Galmuri14 (한글 픽셀폰트) -->
+  <link href="https://cdn.jsdelivr.net/npm/galmuri@2.40.3/dist/galmuri.min.css" rel="stylesheet">
+  <!-- ② Press Start 2P (영문 레트로) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"/>
+  <!-- ③ NES.css (픽셀 컴포넌트 기반) -->
+  <link rel="stylesheet" href="https://unpkg.com/nes.css@2.3.0/css/nes.min.css"/>
+  <!-- ④ Tailwind (레이아웃 유틸) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* ══════════════════════════════════════════
+       BASE — 레트로 픽셀 리셋
+    ══════════════════════════════════════════ */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+    html {
+      font-size: 13px !important;
+      -webkit-font-smoothing: none !important;
+      -moz-osx-font-smoothing: none !important;
+      font-smooth: never !important;
+    }
+    body {
+      font-family: 'Galmuri14', 'Courier New', monospace !important;
+      background: #020602;
+      color: #3dcc5c;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* NES.css 전역 font 오버라이드 */
+    *, .nes-container, .nes-btn, .nes-input,
+    p, span, div, label, button, input, select, pre {
+      font-family: 'Galmuri14', 'Courier New', monospace !important;
+    }
+
+    /* ══════════════════════════════════════════
+       CRT BACKGROUND
+    ══════════════════════════════════════════ */
+    body {
+      background:
+        radial-gradient(ellipse 80% 60% at 50% 40%, #061006 0%, #010301 100%);
+    }
+
+    /* ══════════════════════════════════════════
+       SCROLLBAR
+    ══════════════════════════════════════════ */
+    ::-webkit-scrollbar       { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #010301; border-left: 2px solid #0a1a0a; }
+    ::-webkit-scrollbar-thumb { background: #1a5a1a; border: 1px solid #0a2e0a; }
+    ::-webkit-scrollbar-thumb:hover { background: #2d8c2d; }
+
+    /* ══════════════════════════════════════════
+       PIXEL PANEL  (NES double-border 스타일)
+    ══════════════════════════════════════════ */
+    .px-panel {
+      background: #030803;
+      border: 3px solid #1a3d1a;
+      box-shadow:
+        0 0 0 1px #010301,
+        0 0 0 4px #2d5a2d,
+        0 0 20px rgba(0,200,50,0.06),
+        inset 0 0 40px rgba(0,0,0,0.7);
+    }
+    .px-panel-red {
+      border-color: #5a1a2d !important;
+      box-shadow:
+        0 0 0 1px #010301,
+        0 0 0 4px #8c2d3d,
+        0 0 20px rgba(255,0,50,0.08),
+        inset 0 0 40px rgba(0,0,0,0.7) !important;
+    }
+
+    /* ══════════════════════════════════════════
+       HEADER
+    ══════════════════════════════════════════ */
+    .px-header {
+      background: #010401;
+      border-bottom: 3px solid #1a3d1a;
+      box-shadow: 0 3px 0 #0a1e0a, 0 0 24px rgba(0,255,65,0.08);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 8px 16px;
+    }
+    .logo {
+      font-family: 'Press Start 2P', monospace !important;
+      font-size: 11px;
+      color: #33ff57;
+      text-shadow: 0 0 8px #33ff57, 0 0 24px rgba(51,255,87,0.4);
+      letter-spacing: 1px;
+      white-space: nowrap;
+    }
+    .logo-check {
+      color: #ff3355;
+      text-shadow: 0 0 8px #ff3355, 0 0 20px rgba(255,51,85,0.4);
+    }
+
+    /* ══════════════════════════════════════════
+       PIXEL BUTTONS
+    ══════════════════════════════════════════ */
+    .px-btn {
+      font-family: 'Galmuri14', monospace !important;
+      font-size: 12px !important;
+      background: #050f05;
+      color: #4dff80;
+      border: 2px solid #2d5a2d;
+      padding: 4px 10px;
+      cursor: pointer;
+      box-shadow: 3px 3px 0 #0d2e0d;
+      transition: none;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+    .px-btn:hover  { background: #0a1e0a; color: #80ff99; border-color: #33ff57; }
+    .px-btn:active { box-shadow: none; transform: translate(3px,3px); }
+
+    .px-btn-blue   { background:#050a12; color:#4daaff; border-color:#2d4a5a; box-shadow:3px 3px 0 #0d1e2e; }
+    .px-btn-blue:hover { background:#0a1424; color:#80ccff; border-color:#4daaff; }
+
+    .px-btn-warn   { background:#0f0d02; color:#ffd700; border-color:#5a4d1a; box-shadow:3px 3px 0 #2e2a0a; }
+    .px-btn-warn:hover { color:#ffe866; border-color:#ffd700; }
+
+    .px-btn-red    { background:#120205; color:#ff4d6a; border-color:#5a1a2d; box-shadow:3px 3px 0 #2e0a14; }
+    .px-btn-red:hover { color:#ff8099; border-color:#ff3355; }
+
+    /* ══════════════════════════════════════════
+       PIXEL INPUTS & SELECT
+    ══════════════════════════════════════════ */
+    .px-input {
+      font-family: 'Galmuri14', monospace !important;
+      font-size: 12px !important;
+      background: #010401;
+      color: #4dff80;
+      border: 2px solid #1a3d1a;
+      padding: 4px 8px;
+      outline: none;
+      caret-color: #33ff57;
+    }
+    .px-input:focus { border-color: #33ff57; box-shadow: 0 0 8px rgba(51,255,87,0.2); }
+    .px-input::placeholder { color: #1a4d1a; }
+    .px-input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert(0.5) sepia(1) saturate(3) hue-rotate(80deg); }
+
+    .px-select {
+      font-family: 'Galmuri14', monospace !important;
+      font-size: 12px !important;
+      background: #010401;
+      color: #4dff80;
+      border: 2px solid #1a3d1a;
+      padding: 4px 6px;
+      outline: none;
+      cursor: pointer;
+    }
+    .px-select option { background: #010401; }
+
+    /* ══════════════════════════════════════════
+       PANEL SECTION TITLES
+    ══════════════════════════════════════════ */
+    .px-title {
+      font-family: 'Press Start 2P', monospace !important;
+      font-size: 7px;
+      color: #1a6b2d;
+      letter-spacing: 2px;
+      padding: 6px 10px;
+      border-bottom: 2px solid #1a3d1a;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    /* ══════════════════════════════════════════
+       FILE TREE
+    ══════════════════════════════════════════ */
+    .tree-children  { display: none; }
+    .tree-children.open { display: block; }
+
+    .tree-file, .tree-dir {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 8px;
+      cursor: pointer;
+      font-size: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+    .tree-file { color: #2d9944; }
+    .tree-file:hover { background: #060f06; color: #66ff88; }
+    .tree-file.selected { background: #0a1e0a; color: #33ff57; border-left: 2px solid #33ff57; padding-left: 6px; }
+    .tree-dir  { color: #b8960c; }
+    .tree-dir:hover { background: #0f0d01; color: #ffd700; }
+
+    .tree-arrow { font-size: 9px; color: #1a4d1a; flex-shrink: 0; }
+    .tree-name  { overflow: hidden; text-overflow: ellipsis; flex: 1; }
+    .tree-ago   { font-size: 10px; color: #1a3d1a; flex-shrink: 0; display: none; }
+    .tree-file:hover .tree-ago { display: inline; }
+
+    /* ══════════════════════════════════════════
+       LOG VIEWER + SCANLINE CRT EFFECT
+    ══════════════════════════════════════════ */
+    .log-wrap {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+    /* Scanline 오버레이 (포인터 이벤트 차단 안 함) */
+    .log-wrap::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent            0px,
+        transparent            2px,
+        rgba(0,0,0,0.18)       2px,
+        rgba(0,0,0,0.18)       4px
+      );
+      pointer-events: none;
+      z-index: 2;
+    }
+    /* CRT 주변 vignette */
+    .log-wrap::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.55) 100%);
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    #logViewer {
+      height: 100%;
+      overflow-y: auto;
+      padding: 6px 8px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── Log lines ── */
+    .log-line {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 1px 4px;
+      border-radius: 1px;
+    }
+    .log-line:hover { background: rgba(0,255,65,0.04); }
+    .log-error { background: rgba(255,51,85,0.07) !important; }
+    .log-warn  { background: rgba(255,215,0,0.05) !important; }
+
+    .log-num {
+      color: #1a4d1a;
+      user-select: none;
+      min-width: 40px;
+      text-align: right;
+      flex-shrink: 0;
+      font-size: 11px;
+      padding-top: 1px;
+    }
+    .log-text {
+      flex: 1;
+      word-break: break-all;
+      font-size: 12px;
+      line-height: 1.5;
+      color: #3acc55;
+    }
+    .log-error .log-text { color: #ff4d6a; }
+    .log-warn  .log-text { color: #ffd700; }
+
+    .log-ctx {
+      opacity: 0;
+      color: #1a4d1a;
+      cursor: pointer;
+      flex-shrink: 0;
+      font-size: 11px;
+      padding: 0 3px;
+      border: none;
+      background: none;
+      transition: opacity 0.1s, color 0.1s;
+    }
+    .log-line:hover .log-ctx { opacity: 1; color: #4daaff; }
+
+    /* ── Smart highlight ── */
+    .hl-error   { color: #ff6680 !important; font-weight: 700; text-shadow: 0 0 5px rgba(255,51,85,0.6); }
+    .hl-warn    { color: #ffd700 !important; font-weight: 700; text-shadow: 0 0 5px rgba(255,200,0,0.5); }
+    .hl-keyword { background: rgba(255,255,100,0.18); color: #ffff80 !important; padding: 0 2px; border-bottom: 1px solid #ffff00; }
+
+    /* ── Tail 타이핑 커서 ── */
+    .type-cursor {
+      display: inline-block;
+      color: #33ff57;
+      text-shadow: 0 0 6px #33ff57;
+      animation: blink-cursor 0.6s step-end infinite;
+    }
+    @keyframes blink-cursor { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    /* ══════════════════════════════════════════
+       EXCEPTION PANEL
+    ══════════════════════════════════════════ */
+    .exc-card {
+      background: #0f0107;
+      border: 2px solid #3d0a18;
+      padding: 7px;
+      cursor: pointer;
+      margin-bottom: 4px;
+    }
+    .exc-card:hover { border-color: #ff3355; box-shadow: 0 0 10px rgba(255,51,85,0.25); }
+    .exc-type { color: #ff4d6a; font-size: 11px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 2px; }
+    .exc-msg  { color: #7a3344; font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .exc-loc  { color: #4d1a26; font-size: 10px; margin-top: 2px; }
+
+    /* 에러 발생 시 패널 깜빡임 */
+    @keyframes exc-blink {
+      0%,100% { border-color: #5a1a2d; box-shadow: 0 0 0 1px #010301, 0 0 0 4px #8c2d3d, 0 0 16px rgba(255,0,50,0.15); }
+      50%      { border-color: #3d0a1a; box-shadow: 0 0 0 1px #010301, 0 0 0 4px #3d0a1a; }
+    }
+    .exc-alert { animation: exc-blink 0.9s step-end infinite; }
+
+    /* 뱃지 깜빡임 */
+    @keyframes badge-blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+    .exc-badge { animation: badge-blink 1s step-end infinite; }
+
+    /* SSE 상태 표시 */
+    @keyframes sse-pulse {
+      0%,100% { color:#33ff57; text-shadow:0 0 8px #33ff57; }
+      50%      { color:#1a4d1a; text-shadow:none; }
+    }
+    .sse-on { animation: sse-pulse 1.2s ease-in-out infinite; }
+
+    /* ══════════════════════════════════════════
+       TAIL LED
+    ══════════════════════════════════════════ */
+    .led {
+      width: 10px; height: 10px;
+      border: 2px solid #1a3d1a;
+      background: #0a1e0a;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .led.on {
+      background: #33ff57;
+      border-color: #33ff57;
+      box-shadow: 0 0 6px #33ff57, 0 0 12px rgba(51,255,87,0.4);
+    }
+
+    /* ══════════════════════════════════════════
+       CONTEXT MODAL
+    ══════════════════════════════════════════ */
+    .ctx-modal-bg {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(2px);
+      z-index: 50;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+    }
+    .ctx-modal {
+      background: #020702;
+      border: 3px solid #1a3d1a;
+      box-shadow: 0 0 0 1px #010301, 0 0 0 5px #2d5a2d, 0 0 40px rgba(0,200,50,0.12);
+      width: 85%; max-width: 1000px; max-height: 80vh;
+      display: flex; flex-direction: column;
+    }
+    .ctx-modal-hd {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 14px;
+      border-bottom: 2px solid #1a3d1a;
+      flex-shrink: 0;
+    }
+    .ctx-modal-title {
+      font-family: 'Press Start 2P', monospace !important;
+      font-size: 8px; color: #1a6b2d;
+    }
+    .ctx-modal-body { flex: 1; overflow-y: auto; padding: 8px 12px; }
+    .ctx-row { display: flex; gap: 10px; padding: 1px 4px; align-items: flex-start; border-radius: 1px; }
+    .ctx-focus { background: rgba(255,215,0,0.10); border-left: 2px solid #ffd700; padding-left: 2px; }
+    .ctx-num  { color: #1a4d1a; min-width: 44px; text-align: right; flex-shrink: 0; font-size: 11px; }
+    .ctx-text { flex: 1; word-break: break-all; font-size: 12px; line-height: 1.5; color: #2d9944; }
+    .ctx-focus .ctx-text { color: #ffe87a; }
+
+    /* ─── Custom Context Menu ─── */
+    .px-context-menu {
+      position: fixed; display: none; background: #0a0a0a; border: 1px solid #1a3d1a;
+      box-shadow: 4px 4px 12px rgba(0,0,0,0.6); z-index: 1000; padding: 4px 0; min-width: 180px;
+    }
+    .px-ctx-item {
+      padding: 8px 12px; color: #33ff57; cursor: pointer; font-size: 11px;
+      transition: background 0.1s; display: flex; align-items: center; gap: 8px;
+    }
+    .px-ctx-item:hover { background: #1a3d1a; color: #fff; }
+    .px-ctx-item i { font-style: normal; opacity: 0.6; }
+
+    /* ─── JSON Coloring & Tree ─── */
+    .json-key { color: #88ccff; }
+    .json-str { color: #ffeb95; }
+    .json-num { color: #ff9dcc; }
+    .json-bool{ color: #bd93f9; }
+    .json-null{ color: #ff5555; font-weight: 700; }
+    .json-node { margin-left: 20px; border-left: 1px dashed #1a3344; padding-left: 10px; }
+    .json-toggle { cursor: pointer; color: #1a6b2d; font-size: 10px; margin-right: 5px; user-select: none; }
+    .json-leaf { padding-left: 15px; }
+    .json-collapsed > .json-node { display: none; }
+    .json-collapsed > .json-toggle::before { content: '▶'; }
+    .json-toggle::before { content: '▼'; }
+    .json-summary { color: #1a4d1a; font-size: 10px; font-style: italic; margin-left: 10px; }
+  </style>
+</head>
+
+<body>
+
+<!-- ════════════════════════ HEADER ═════════════════════════ -->
+<header class="px-header">
+  <span class="logo">⚡ PULSE<span class="logo-check">CHECK</span></span>
+
+  <div style="display:flex;align-items:center;gap:10px;flex:0 0 auto;max-width:200px">
+    <span style="color:#1a4d1a;font-size:10px;white-space:nowrap">STORAGE:</span>
+    <span id="currentPathDisplay" style="color:#33ff57;font-size:11px;background:#030d03;border:1px solid #1a3d1a;padding:3px 10px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+      LOGS
+    </span>
+    <button onclick="loadFileTree()" class="px-btn" title="Refresh List">↻</button>
+  </div>
+  <input id="pathInput" type="hidden" value=""/>
+
+  <div style="display:flex;align-items:center;gap:12px;margin-left:auto">
+
+    <!-- 마스킹 토글 -->
+    <button id="maskBtn" onclick="toggleMasking()"
+            class="px-btn px-btn-warn" style="padding:3px 8px;font-size:10px">
+      MASK: OFF
+    </button>
+
+    <!-- Tail LED -->
+    <span style="color:#1a4d1a;font-size:10px">TAIL:</span>
+    <div id="tailLed" class="led" onclick="toggleTailClick()" title="클릭하여 Tail 토글"></div>
+    <input id="tailToggle" type="checkbox" class="sr-only" onchange="toggleTail(this.checked)"/>
+    <span id="tailStatus" style="font-size:10px;color:#1a4d1a">OFF</span>
+
+    <!-- 구분선 -->
+    <span style="color:#1a3d1a">│</span>
+
+    <!-- 사용자 표시 -->
+    <span style="font-size:10px;color:#1a4d1a" th:text="${username}">admin</span>
+
+    <!-- 설정 -->
+    <a href="/settings" style="text-decoration:none">
+      <button class="px-btn" style="padding:3px 8px;font-size:10px" title="계정 설정">⚙ SETTINGS</button>
+    </a>
+
+    <!-- 로그아웃 -->
+    <form method="post" th:action="@{/logout}" style="margin:0">
+      <button type="submit" class="px-btn px-btn-red" style="padding:3px 8px;font-size:10px">
+        LOGOUT
+      </button>
+    </form>
+  </div>
+</header>
+
+<!-- ════════════════════════ LAYOUT ═════════════════════════ -->
+<div style="display:flex;flex:1;overflow:hidden;gap:6px;padding:6px;background:#010301">
+
+  <!-- ── LEFT: FILE TREE ───────────────────────────────── -->
+    <aside class="px-panel" style="width:240px;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden">
+    <div class="px-title">
+      <span>FILE LIST</span>
+      <span id="treeCount" style="color:#1a3d1a;font-size:7px"></span>
+    </div>
+    <div id="fileTree" style="flex:1;overflow-y:auto;padding:4px 4px">
+      <div style="color:#1a4d1a;font-size:11px;padding:6px 8px">파일 목록을 불러오는 중...</div>
+    </div>
+  </aside>
+
+  <!-- ── CENTER ────────────────────────────────────────── -->
+  <main style="flex:1;display:flex;flex-direction:column;overflow:hidden;gap:6px">
+
+    <!-- Filter Panel -->
+    <section class="px-panel" style="flex-shrink:0;padding:10px 12px">
+      <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end">
+
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <label style="font-size:9px;color:#1a4d1a;letter-spacing:1px">TEXT FILTER</label>
+          <div style="display:flex;gap:4px">
+            <input id="filterText" type="text" placeholder="keyword1, keyword2" class="px-input" style="width:190px"/>
+            <select id="filterMode" class="px-select">
+              <option value="AND">AND</option>
+              <option value="OR">OR</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <label style="font-size:9px;color:#1a4d1a;letter-spacing:1px">MIN (MS)</label>
+          <input id="filterMs" type="number" min="0" placeholder="500" class="px-input" style="width:90px"/>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <div style="display:flex;justify-content:space-between;align-items:center;min-width:320px">
+            <label style="font-size:9px;color:#1a4d1a;letter-spacing:1px">TIME RANGE</label>
+            <span id="detectedRange" style="font-size:8px;color:#2d5a2d;cursor:pointer;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="분석된 시간 범위 (클릭 시 자동 입력)"></span>
+          </div>
+          <div style="display:flex;gap:4px;align-items:center">
+            <input id="fDateFrom" type="date" class="px-input" style="width:115px"/>
+            <input id="fTimeFrom" type="time" class="px-input" style="width:150px"/>
+            <span style="color:#1a3d1a">~</span>
+            <input id="fDateTo"   type="date" class="px-input" style="width:115px"/>
+            <input id="fTimeTo"   type="time" class="px-input" style="width:150px"/>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:6px;align-items:flex-end;margin-left:auto">
+          <button onclick="applyFilters()" class="px-btn px-btn-blue">▶ APPLY</button>
+          <button onclick="clearFilters()" class="px-btn px-btn-warn">✕ CLEAR</button>
+        </div>
+      </div>
+
+      <!-- Active file chip -->
+      <div id="activeFileChip" style="display:none;align-items:center;gap:8px;margin-top:8px;font-size:11px">
+        <span style="color:#1a4d1a">VIEWING:</span>
+        <span id="activeFileName" style="color:#33ff57;background:#030d03;border:1px solid #1a3d1a;padding:1px 8px;max-width:360px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+        <span id="lineCount" style="color:#1a4d1a"></span>
+        <span id="limitWarn" class="hidden" style="color:#ffd700;font-size:10px">⚠ MAX LINES REACHED</span>
+      </div>
+    </section>
+
+    <!-- Log Viewer (CRT scanline) -->
+    <div class="px-panel log-wrap">
+      <div id="logViewer">
+        <div class="log-line">
+          <span class="log-num"></span>
+          <span class="log-text" style="color:#1a4d1a">파일을 선택하면 로그가 여기에 표시됩니다.</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ── RIGHT: EXCEPTION PANEL ───────────────────────── -->
+  <aside id="excPanel" class="px-panel" style="width:256px;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden">
+    <div class="px-title">
+      <span>EXCEPTIONS</span>
+      <span id="exceptionCount" style="display:none;background:#4a0015;color:#ff4d6a;padding:1px 6px;font-size:8px" class="exc-badge">0</span>
+    </div>
+    <div id="exceptionList" style="flex:1;overflow-y:auto;padding:6px">
+      <div style="color:#1a4d1a;font-size:11px;padding:4px 6px">예외 없음</div>
+    </div>
+
+    <!-- Stack trace 상세 -->
+    <div id="stackDetail" style="display:none;border-top:2px solid #2d0a15;padding:8px;max-height:160px;overflow-y:auto">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <span style="font-family:'Press Start 2P',monospace!important;font-size:7px;color:#ff4d6a">STACK TRACE</span>
+        <button onclick="closeStackDetail()" style="color:#4d1a2a;font-size:11px;background:none;border:none;cursor:pointer">✕</button>
+      </div>
+      <pre id="stackDetailContent" style="font-size:10px;color:#7a3344;white-space:pre-wrap;word-break:break-words;line-height:1.5"></pre>
+    </div>
+  </aside>
+</div>
+
+<!-- ════════════════════ CONTEXT MODAL ══════════════════════ -->
+<div id="contextModal" class="ctx-modal-bg" style="display:none" onclick="if(event.target===this)closeContextModal()">
+  <div class="ctx-modal">
+    <div class="ctx-modal-hd">
+      <span class="ctx-modal-title">ERROR CONTEXT (±20 LINES)</span>
+      <div style="display:flex;align-items:center;gap:12px">
+        <span id="contextMeta" style="color:#1a4d1a;font-size:10px"></span>
+        <button onclick="closeContextModal()" class="px-btn px-btn-red" style="padding:2px 8px;font-size:11px">✕ CLOSE</button>
+      </div>
+    </div>
+    <div id="contextContent" class="ctx-modal-body"></div>
+  </div>
+</div>
+
+<!-- ════════════════════ ERROR DETAIL MODAL ════════════════════ -->
+<div id="errorDetailModal" class="ctx-modal-bg" style="display:none" onclick="if(event.target===this)closeErrorDetailModal()">
+  <div class="ctx-modal" style="width:90%; max-width:1100px;">
+    <div class="ctx-modal-hd" style="border-bottom-color:#3d0a18">
+      <span class="ctx-modal-title" style="color:#ff4d6a">ERROR INSPECTOR</span>
+      <button onclick="closeErrorDetailModal()" class="px-btn px-btn-red" style="padding:2px 8px;font-size:11px">✕ CLOSE</button>
+    </div>
+    <div class="ctx-modal-body" style="background:#0a0104">
+      <div style="margin-bottom:12px; padding:10px; background:#1a050a; border:1px solid #3d0a18">
+        <div id="errDetailType" style="color:#ff4d6a; font-weight:700; font-size:13px; margin-bottom:6px"></div>
+        <div id="errDetailMsg" style="color:#cc8899; font-size:12px; line-height:1.4"></div>
+      </div>
+      <div style="font-family:'Press Start 2P',monospace!important; font-size:7px; color:#4d1a2a; margin-bottom:6px">FULL STACK TRACE</div>
+      <pre id="errDetailStack" style="font-size:11px; color:#8a3344; background:#050002; padding:10px; border:1px solid #2d0a15; overflow-x:auto; white-space:pre-wrap; word-break:break-all"></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ JSON VIEWER MODAL ═════════════════════ -->
+<div id="jsonModal" class="ctx-modal-bg" style="display:none" onclick="if(event.target===this)closeJsonModal()">
+  <div class="ctx-modal" style="width:90%; max-width:1100px;">
+    <div class="ctx-modal-hd" style="border-bottom-color:#2a4d69">
+      <span class="ctx-modal-title" style="color:#88ccff">JSON INSPECTOR</span>
+      <div style="display:flex;gap:8px">
+        <button onclick="copyJsonToClipboard()" class="px-btn px-btn-blue" style="padding:2px 8px;font-size:11px">📋 COPY</button>
+        <button onclick="closeJsonModal()" class="px-btn px-btn-red" style="padding:2px 8px;font-size:11px">✕ CLOSE</button>
+      </div>
+    </div>
+    <div class="ctx-modal-body" style="background:#010a0f">
+      <pre id="jsonViewerContent" style="font-size:12px; color:#a0b0c0; background:#000; border:1px solid #1a3344; padding:15px; overflow-x:auto; line-height:1.6"></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ CUSTOM CONTEXT MENU ══════════════════ -->
+<div id="pxContextMenu" class="px-context-menu" onclick="this.style.display='none'">
+  <div class="px-ctx-item" id="jsonMenuBtn" onclick="openJsonViewerFromMenu()">
+    <span>{ }</span> <b>JSON 포맷팅으로 결과보기</b>
+  </div>
+  <div class="px-ctx-item" onclick="copyActiveLine()">
+    <span>📋</span> <b>라인 복사</b>
+  </div>
+</div>
+
+<!-- ════════════════════════ JS ══════════════════════════════ -->
+<script>
+/* ─── State ──────────────────────────────────────────────── */
+let currentFilePath = null;
+let currentLineNums = [];
+let activeKeywords  = [];
+let sseSource       = null;
+let maskingEnabled  = false;
+let logStartTime    = null;
+let logEndTime      = null;
+
+/* ─── Range Display ─────────────────────────────────────── */
+function updateRangeDisplay() {
+  const el = document.getElementById('detectedRange');
+  if (logStartTime && logEndTime) {
+    el.textContent = `SYNC: ${logStartTime} ~ ${logEndTime}`;
+    el.title = `분석된 시간 범위: ${logStartTime} ~ ${logEndTime}\n클릭 시 필터에 자동 입력됩니다.`;
+    el.onclick = () => {
+      const start = formatForInput(logStartTime);
+      const end   = formatForInput(logEndTime);
+      if (start) {
+        document.getElementById('fDateFrom').value = start.date;
+        document.getElementById('fTimeFrom').value = start.time;
+      }
+      if (end) {
+        document.getElementById('fDateTo').value   = end.date;
+        document.getElementById('fTimeTo').value   = end.time;
+      }
+    };
+  } else {
+    el.textContent = '';
+    el.onclick = null;
+  }
+}
+
+function formatForInput(ts) {
+  if (!ts) return null;
+  // ts: "2026-03-31 12:44:08" or "2026-03-31T12:44:08"
+  const parts = ts.split(/[T ]/);
+  return {
+    date: parts[0],
+    time: parts[1] ? parts[1].substring(0, 5) : "" // "HH:mm"만 추출
+  };
+}
+
+/* ─── Masking Toggle ────────────────────────────────────── */
+function toggleMasking() {
+  maskingEnabled = !maskingEnabled;
+  const btn = document.getElementById('maskBtn');
+  if (maskingEnabled) {
+    btn.textContent = 'MASK: ON';
+    btn.style.color = '#ff4d6a';
+    btn.style.borderColor = '#ff4d6a';
+  } else {
+    btn.textContent = 'MASK: OFF';
+    btn.style.color = '';
+    btn.style.borderColor = '';
+  }
+  if (currentFilePath) loadLog(currentFilePath, buildCurrentParams());
+}
+
+/* 현재 필터 파라미터 수집 (마스킹 포함) */
+function buildCurrentParams() {
+  const params = {};
+  const text = document.getElementById('filterText').value.trim();
+  if (text) { params.keywords = text; params.keywordMode = document.getElementById('filterMode').value; }
+  const ms   = document.getElementById('filterMs').value;
+  if (ms)   params.minMs = ms;
+
+  const dFrom = document.getElementById('fDateFrom').value;
+  const tFrom = document.getElementById('fTimeFrom').value;
+  const dTo   = document.getElementById('fDateTo').value;
+  const tTo   = document.getElementById('fTimeTo').value;
+
+  if (dFrom || tFrom) params.from = (dFrom || "") + (tFrom ? "T" + tFrom : "");
+  if (dTo || tTo)     params.to   = (dTo || "")   + (tTo ? "T" + tTo : "");
+
+  if (maskingEnabled) params.masking = 'true';
+  return params;
+}
+
+/* ─── Pixel SVG Icons ────────────────────────────────────── */
+const SVG_FILE = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 12" width="10" height="12">
+  <rect x="0" y="0" width="7" height="1" fill="#2d9944"/>
+  <rect x="0" y="1" width="1" height="10" fill="#2d9944"/>
+  <rect x="0" y="11" width="10" height="1" fill="#2d9944"/>
+  <rect x="9" y="3" width="1" height="9" fill="#2d9944"/>
+  <rect x="7" y="0" width="2" height="3" fill="#0d3d1a"/>
+  <rect x="9" y="0" width="1" height="1" fill="#2d9944"/>
+  <rect x="7" y="3" width="2" height="1" fill="#2d9944"/>
+</svg>`;
+const SVG_FILE_SEL = SVG_FILE.replace(/#2d9944/g,'#33ff57').replace(/#0d3d1a/g,'#1a5c2d');
+
+const SVG_DIR = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 10" width="14" height="10">
+  <rect x="0" y="2" width="5" height="2" fill="#ccaa00"/>
+  <rect x="0" y="4" width="14" height="6" fill="#ccaa00"/>
+  <rect x="1" y="5" width="12" height="4" fill="#998800"/>
+</svg>`;
+
+function svgUri(svg) {
+  return 'data:image/svg+xml;base64,' + btoa(svg);
+}
+
+/* ─── HTML Escape & Highlight ────────────────────────────── */
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function highlightLine(raw, keywords) {
+  let s = escHtml(raw);
+  for (const kw of keywords) {
+    if (!kw) continue;
+    const safe = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    s = s.replace(new RegExp(safe, 'gi'), m => `<span class="hl-keyword">${m}</span>`);
+  }
+  return s;
+}
+
+function levelCls(line) {
+  const u = line.toUpperCase();
+  if (u.includes('ERROR') || u.includes('EXCEPTION') || u.includes('FATAL')) return 'log-error';
+  if (u.includes('WARN')) return 'log-warn';
+  return '';
+}
+
+/* ─── File Tree ──────────────────────────────────────────── */
+async function loadFileTree() {
+  const path = document.getElementById('pathInput').value.trim();
+  const box  = document.getElementById('fileTree');
+  box.innerHTML = '<div style="color:#1a4d1a;font-size:11px;padding:6px 8px;animation:blink-cursor 0.7s infinite">SCANNING...</div>';
+
+  try {
+    const url = '/api/files' + (path ? `?path=${encodeURIComponent(path)}` : '');
+    const res = await fetch(url);
+    if (!res.ok) { box.innerHTML = `<div style="color:#ff4d6a;font-size:11px;padding:6px 8px">ERR: ${escHtml(await res.text())}</div>`; return; }
+    const tree = await res.json();
+    box.innerHTML = '';
+    
+    // 경로 표시 업데이트 (절대 경로 노출 방지)
+    // document.getElementById('currentPathDisplay').textContent = tree.path;
+    
+    // 루트의 자식(평면 리스트)들을 바로 렌더링
+    if (tree.children && tree.children.length > 0) {
+      tree.children.forEach(child => {
+        box.appendChild(renderNode(child, 0));
+      });
+    } else {
+      box.innerHTML = '<div style="color:#1a3d1a;font-size:11px;padding:6px 8px">파일이 없습니다.</div>';
+    }
+    
+    // 파일 수 카운트
+    const cnt = tree.children ? tree.children.length : 0;
+    document.getElementById('treeCount').textContent = cnt + ' files';
+  } catch(e) {
+    box.innerHTML = `<div style="color:#ff4d6a;font-size:11px;padding:6px 8px">${escHtml(e.message)}</div>`;
+  }
+}
+
+function renderNode(node, depth) {
+  const el = document.createElement('div');
+  if (node.type === 'FILE') {
+    const ago  = node.lastModified ? relativeTime(node.lastModified) : '';
+    const item = document.createElement('div');
+    item.className = 'tree-file';
+    item.style.paddingLeft = (8 + depth * 12) + 'px';
+    item.title = node.path + (ago ? `\n${ago}` : '');
+    item.innerHTML =
+      `<img src="${svgUri(SVG_FILE)}" width="10" height="12" style="flex-shrink:0" class="file-icon"/>` +
+      `<span class="tree-name">${escHtml(node.name)}</span>` +
+      (ago ? `<span class="tree-ago">${ago}</span>` : '');
+    item.onclick = () => selectFile(node.path, node.name, item);
+    el.appendChild(item);
+  } else {
+    const arrowId = 'arr_' + Math.random().toString(36).slice(2,7);
+    const header  = document.createElement('div');
+    header.className = 'tree-dir';
+    header.style.paddingLeft = (8 + depth * 12) + 'px';
+    header.innerHTML =
+      `<span id="${arrowId}" class="tree-arrow">▶</span>` +
+      `<img src="${svgUri(SVG_DIR)}" width="14" height="10" style="flex-shrink:0"/>` +
+      `<span class="tree-name">${escHtml(node.name)}</span>`;
+
+    const children = document.createElement('div');
+    children.className = 'tree-children';
+
+    header.onclick = () => {
+      const open = children.classList.toggle('open');
+      document.getElementById(arrowId).textContent = open ? '▼' : '▶';
+    };
+    (node.children || []).forEach(c => { const n = renderNode(c, depth+1); if(n) children.appendChild(n); });
+    el.appendChild(header);
+    el.appendChild(children);
+  }
+  return el;
+}
+
+function relativeTime(ms) {
+  const d = Date.now() - ms, m = Math.floor(d/60000);
+  if (m < 1)  return '방금';
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m/60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h/24)}d ago`;
+}
+
+/* ─── File Selection ─────────────────────────────────────── */
+let _lastSel = null;
+async function selectFile(path, name, itemEl) {
+  if (_lastSel) {
+    _lastSel.classList.remove('selected');
+    _lastSel.querySelector('.file-icon')?.setAttribute('src', svgUri(SVG_FILE));
+  }
+  itemEl.classList.add('selected');
+  itemEl.querySelector('.file-icon')?.setAttribute('src', svgUri(SVG_FILE_SEL));
+  _lastSel = itemEl;
+
+  currentFilePath = path;
+  document.getElementById('activeFileName').textContent = name;
+  document.getElementById('activeFileChip').style.display = 'flex';
+  await loadLog(path);
+}
+
+/* ─── Log Loading ────────────────────────────────────────── */
+async function loadLog(path, params = {}) {
+  const viewer = document.getElementById('logViewer');
+  viewer.innerHTML = '<div class="log-line"><span class="log-num"></span><span class="log-text" style="color:#1a4d1a;animation:blink-cursor 0.7s infinite">LOADING...</span></div>';
+
+  const qp = new URLSearchParams({ path, ...params });
+  try {
+    const res = await fetch(`/api/log?${qp}`);
+    if (!res.ok) { showLogError(await res.text()); return; }
+    const data = await res.json();
+
+    currentLineNums = data.lineNumbers || data.lines.map((_,i) => i);
+    renderLog(data.lines, currentLineNums, activeKeywords);
+    renderExceptions(data.exceptions || []);
+
+    logStartTime = data.startTime;
+    logEndTime   = data.endTime;
+    updateRangeDisplay();
+
+    const cnt  = data.lines.length;
+    document.getElementById('lineCount').textContent = `(${cnt.toLocaleString()} lines)`;
+    const warn = document.getElementById('limitWarn');
+    if (cnt >= 10000) warn.classList.remove('hidden'); else warn.classList.add('hidden');
+  } catch(e) { showLogError(e.message); }
+}
+
+function showLogError(msg) {
+  document.getElementById('logViewer').innerHTML =
+    `<div class="log-line"><span class="log-num"></span><span class="log-text log-error">${escHtml(msg)}</span></div>`;
+}
+
+/* ─── Render Log ─────────────────────────────────────────── */
+function renderLog(lines, lineNums, keywords) {
+  const viewer = document.getElementById('logViewer');
+  if (!lines.length) {
+    viewer.innerHTML = '<div class="log-line"><span class="log-num"></span><span class="log-text" style="color:#1a3d1a">결과 없음</span></div>';
+    return;
+  }
+  const frag = document.createDocumentFragment();
+  lines.forEach((line, i) => {
+    const orig = lineNums[i] ?? i;
+    const wrap = document.createElement('div');
+    wrap.className = 'log-line ' + levelCls(line);
+    wrap.dataset.line = orig;
+
+    const numEl = document.createElement('span');
+    numEl.className = 'log-num';
+    numEl.textContent = orig + 1;
+
+    const txtEl = document.createElement('span');
+    txtEl.className = 'log-text';
+    txtEl.innerHTML = highlightLine(line, keywords);
+
+    const ctxBtn = document.createElement('button');
+    ctxBtn.className = 'log-ctx';
+    ctxBtn.title = '앞뒤 20줄 (더블클릭도 가능)';
+    ctxBtn.textContent = '⊞';
+    ctxBtn.onclick = e => { e.stopPropagation(); showContext(orig); };
+
+    wrap.appendChild(numEl);
+    wrap.appendChild(txtEl);
+    wrap.appendChild(ctxBtn);
+    wrap.ondblclick = () => showContext(orig);
+    
+    // 우클릭 메뉴
+    wrap.oncontextmenu = e => showJsonMenu(e, line);
+    
+    frag.appendChild(wrap);
+  });
+  viewer.innerHTML = '';
+  viewer.appendChild(frag);
+  viewer.scrollTop = viewer.scrollHeight;
+}
+
+/* ─── Context Modal ──────────────────────────────────────── */
+async function showContext(lineIndex) {
+  if (!currentFilePath) return;
+  try {
+    const res = await fetch(`/api/log/context?path=${encodeURIComponent(currentFilePath)}&line=${lineIndex}&context=20`);
+    if (!res.ok) return;
+    const data = await res.json();
+
+    document.getElementById('contextMeta').textContent =
+      `LINE ${data.startLine+1} ~ ${data.startLine+data.lines.length}  |  FOCUS: ${data.focusLine+1}`;
+
+    const body = document.getElementById('contextContent');
+    body.innerHTML = '';
+    let focusEl = null;
+    data.lines.forEach((line, i) => {
+      const ln = data.startLine + i;
+      const isFocus = ln === data.focusLine;
+
+      const row = document.createElement('div');
+      row.className = 'ctx-row ' + (isFocus ? 'ctx-focus' : levelCls(line));
+
+      const numEl = document.createElement('span');
+      numEl.className = 'ctx-num';
+      numEl.textContent = ln + 1;
+
+      const txtEl = document.createElement('span');
+      txtEl.className = 'ctx-text';
+      txtEl.innerHTML = highlightLine(line, []);
+
+      row.appendChild(numEl);
+      row.appendChild(txtEl);
+      body.appendChild(row);
+      if (isFocus) focusEl = row;
+    });
+
+    document.getElementById('contextModal').style.display = 'flex';
+    setTimeout(() => focusEl?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 80);
+  } catch(e) { console.error(e); }
+}
+function closeContextModal() { document.getElementById('contextModal').style.display = 'none'; }
+
+/* ─── Exceptions ─────────────────────────────────────────── */
+function renderExceptions(exceptions) {
+  const list  = document.getElementById('exceptionList');
+  const badge = document.getElementById('exceptionCount');
+  const panel = document.getElementById('excPanel');
+
+  if (!exceptions.length) {
+    list.innerHTML = '<div style="color:#1a4d1a;font-size:11px;padding:4px 6px">예외 없음</div>';
+    badge.style.display = 'none';
+    panel.classList.remove('px-panel-red', 'exc-alert');
+    return;
+  }
+  badge.textContent = exceptions.length;
+  badge.style.display = 'inline';
+  panel.classList.add('px-panel-red', 'exc-alert');
+
+  list.innerHTML = '';
+  exceptions.forEach(ex => {
+    const card = document.createElement('div');
+    card.className = 'exc-card';
+    card.title = '클릭: 상세(하단) / 더블클릭: 팝업';
+    card.innerHTML =
+      `<div class="exc-type">${escHtml(ex.type)}</div>` +
+      `<div class="exc-msg">${escHtml(ex.message || '')}</div>` +
+      `<div class="exc-loc">▸ ${escHtml(ex.location || '')}</div>`;
+    
+    // 클릭: 하단 레이아웃 유지
+    card.onclick = () => showStackDetail(ex.stackTrace || '');
+    // 더블클릭: 팝업
+    card.ondblclick = () => showErrorDetailModal(ex);
+    
+    list.appendChild(card);
+  });
+}
+
+function showStackDetail(trace) {
+  document.getElementById('stackDetailContent').textContent = trace;
+  document.getElementById('stackDetail').style.display = 'block';
+}
+function closeStackDetail() { document.getElementById('stackDetail').style.display = 'none'; }
+
+function showErrorDetailModal(ex) {
+  document.getElementById('errDetailType').textContent = ex.type;
+  document.getElementById('errDetailMsg').textContent = ex.message || '(No message)';
+  document.getElementById('errDetailStack').textContent = ex.stackTrace || '(No stack trace)';
+  document.getElementById('errorDetailModal').style.display = 'flex';
+}
+function closeErrorDetailModal() {
+  document.getElementById('errorDetailModal').style.display = 'none';
+}
+
+/* ─── Filters ────────────────────────────────────────────── */
+function applyFilters() {
+  if (!currentFilePath) return;
+  const text = document.getElementById('filterText').value.trim();
+  activeKeywords = text ? text.split(',').map(k => k.trim()).filter(Boolean) : [];
+  loadLog(currentFilePath, buildCurrentParams());
+}
+
+function clearFilters() {
+  ['filterText','filterMs','fDateFrom','fTimeFrom','fDateTo','fTimeTo'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  activeKeywords = [];
+  if (currentFilePath) loadLog(currentFilePath);
+}
+
+/* ─── Tail / SSE ─────────────────────────────────────────── */
+function toggleTailClick() {
+  const chk = document.getElementById('tailToggle');
+  chk.checked = !chk.checked;
+  toggleTail(chk.checked);
+}
+
+function toggleTail(on) {
+  const led    = document.getElementById('tailLed');
+  const status = document.getElementById('tailStatus');
+  if (on) {
+    led.classList.add('on');
+    status.textContent = 'ON';
+    status.className = 'sse-on';
+    status.style.fontSize = '10px';
+    startTail();
+  } else {
+    led.classList.remove('on');
+    status.textContent = 'OFF';
+    status.className = '';
+    status.style.cssText = 'font-size:10px;color:#1a4d1a';
+    stopTail();
+  }
+}
+
+function startTail() {
+  if (!currentFilePath) {
+    alert('파일을 먼저 선택하세요.');
+    document.getElementById('tailToggle').checked = false;
+    toggleTail(false);
+    return;
+  }
+  stopTail();
+  sseSource = new EventSource(`/api/tail?path=${encodeURIComponent(currentFilePath)}&masking=${maskingEnabled}`);
+  sseSource.onmessage = e => {
+    if (e.data === 'PING') return;
+    appendTailLine(e.data);
+  };
+  sseSource.onerror = () => {
+    document.getElementById('tailToggle').checked = false;
+    toggleTail(false);
+  };
+}
+
+function stopTail() { if (sseSource) { sseSource.close(); sseSource = null; } }
+
+/* 타이핑 애니메이션으로 tail 라인 추가 */
+function appendTailLine(text) {
+  const viewer = document.getElementById('logViewer');
+  const wrap   = document.createElement('div');
+  wrap.className = 'log-line ' + levelCls(text);
+
+  const numEl = document.createElement('span');
+  numEl.className = 'log-num';
+  numEl.textContent = '~';
+
+  const txtEl = document.createElement('span');
+  txtEl.className = 'log-text';
+  wrap.appendChild(numEl);
+  wrap.appendChild(txtEl);
+  viewer.appendChild(wrap);
+
+  // 타이핑 효과 (80자 이하만, 이상은 즉시 표시)
+  if (text.length <= 120) {
+    let i = 0;
+    const step = () => {
+      i = Math.min(i + 4, text.length);
+      txtEl.innerHTML = highlightLine(text.slice(0, i), activeKeywords) +
+        (i < text.length ? '<span class="type-cursor">▋</span>' : '');
+      if (i < text.length) requestAnimationFrame(step);
+      else viewer.scrollTop = viewer.scrollHeight;
+    };
+    requestAnimationFrame(step);
+  } else {
+    txtEl.innerHTML = highlightLine(text, activeKeywords);
+    viewer.scrollTop = viewer.scrollHeight;
+  }
+}
+
+/* ─── JSON Viewer & Context Menu ─────────────────────────── */
+let lastRightClickedLine = '';
+
+function showJsonMenu(e, lineText) {
+  e.preventDefault();
+  lastRightClickedLine = lineText;
+  
+  const menu = document.getElementById('pxContextMenu');
+  const jsonBtn = document.getElementById('jsonMenuBtn');
+  
+  // JSON 가능성 체크
+  const hasJson = lineText.includes('{') || lineText.includes('[');
+  jsonBtn.style.display = hasJson ? 'flex' : 'none';
+  
+  menu.style.display = 'block';
+  menu.style.left = e.pageX + 'px';
+  menu.style.top = e.pageY + 'px';
+}
+
+function openJsonViewerFromMenu() {
+  const jsonStr = extractJson(lastRightClickedLine);
+  if (!jsonStr) { alert('JSON 데이터를 찾을 수 없습니다.'); return; }
+  
+  try {
+    const obj = JSON.parse(jsonStr);
+    const viewer = document.getElementById('jsonViewerContent');
+    viewer.innerHTML = '';
+    viewer.appendChild(renderJsonTree(obj));
+    document.getElementById('jsonModal').style.display = 'flex';
+  } catch(e) {
+    alert('JSON 파싱 오류: ' + e.message);
+  }
+}
+
+function renderJsonTree(data, key = null) {
+  const container = document.createElement('div');
+  const isObject  = typeof data === 'object' && data !== null;
+  const isArray   = Array.isArray(data);
+  const type      = isArray ? 'ARRAY' : (isObject ? 'OBJECT' : 'LEAF');
+
+  const line = document.createElement('div');
+  line.style.display = 'flex';
+  line.style.alignItems = 'center';
+
+  if (key !== null) {
+    const keySpan = document.createElement('span');
+    keySpan.className = 'json-key';
+    keySpan.textContent = `"${key}": `;
+    line.appendChild(keySpan);
+  }
+
+  if (isObject) {
+    const toggle = document.createElement('span');
+    toggle.className = 'json-toggle';
+    toggle.onclick = (e) => {
+      e.stopPropagation();
+      container.classList.toggle('json-collapsed');
+    };
+    line.insertBefore(toggle, line.firstChild);
+
+    const braceOpen  = isArray ? '[' : '{';
+    const braceClose = isArray ? ']' : '}';
+    
+    line.appendChild(document.createTextNode(braceOpen));
+    
+    const summary = document.createElement('span');
+    summary.className = 'json-summary';
+    summary.textContent = isArray ? `${data.length} items` : `${Object.keys(data).length} keys`;
+    line.appendChild(summary);
+
+    container.appendChild(line);
+
+    const nodeContainer = document.createElement('div');
+    nodeContainer.className = 'json-node';
+    
+    if (isArray) {
+      data.forEach((val, i) => {
+        nodeContainer.appendChild(renderJsonTree(val));
+      });
+    } else {
+      Object.entries(data).forEach(([k, v]) => {
+        nodeContainer.appendChild(renderJsonTree(v, k));
+      });
+    }
+    
+    container.appendChild(nodeContainer);
+
+    const closeLine = document.createElement('div');
+    closeLine.textContent = braceClose;
+    container.appendChild(closeLine);
+  } else {
+    container.className = 'json-leaf';
+    const valSpan = document.createElement('span');
+    if (typeof data === 'string') {
+      valSpan.className = 'json-str';
+      valSpan.textContent = `"${data}"`;
+    } else if (typeof data === 'number') {
+      valSpan.className = 'json-num';
+      valSpan.textContent = data;
+    } else if (typeof data === 'boolean') {
+      valSpan.className = 'json-bool';
+      valSpan.textContent = data;
+    } else if (data === null) {
+      valSpan.className = 'json-null';
+      valSpan.textContent = 'null';
+    }
+    line.appendChild(valSpan);
+    container.appendChild(line);
+  }
+
+  return container;
+}
+
+function extractJson(text) {
+  const start = Math.min(
+    text.indexOf('{') === -1 ? Infinity : text.indexOf('{'),
+    text.indexOf('[') === -1 ? Infinity : text.indexOf('[')
+  );
+  const end = Math.max(text.lastIndexOf('}'), text.lastIndexOf(']'));
+  if (start === Infinity || end === -1 || start >= end) return null;
+  return text.slice(start, end + 1);
+}
+
+function colorizeJson(json) {
+  return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+    let cls = 'json-num';
+    if (/^"/.test(match)) {
+      if (/:$/.test(match)) cls = 'json-key';
+      else cls = 'json-str';
+    } else if (/true|false/.test(match)) cls = 'json-bool';
+    else if (/null/.test(match)) cls = 'json-null';
+    return `<span class="${cls}">${match}</span>`;
+  });
+}
+
+function closeJsonModal() { document.getElementById('jsonModal').style.display = 'none'; }
+
+function copyJsonToClipboard() {
+  const txt = document.getElementById('jsonViewerContent').innerText;
+  navigator.clipboard.writeText(txt).then(() => alert('JSON이 클립보드에 복사되었습니다.'));
+}
+
+function copyActiveLine() {
+  navigator.clipboard.writeText(lastRightClickedLine).then(() => alert('라인이 복사되었습니다.'));
+}
+
+// 메뉴 닫기
+document.addEventListener('click', () => { document.getElementById('pxContextMenu').style.display = 'none'; });
+
+/* ─── Keyboard ───────────────────────────────────────────── */
+document.getElementById('pathInput').addEventListener('keydown', e => { if (e.key==='Enter') loadFileTree(); });
+document.getElementById('filterText').addEventListener('keydown', e => { if (e.key==='Enter') applyFilters(); });
+document.addEventListener('keydown', e => { if (e.key==='Escape') closeContextModal(); });
+
+/* 초기화: 자동 로드 */
+window.addEventListener('DOMContentLoaded', () => {
+    loadFileTree();
+});
+</script>
+</body>
+</html>

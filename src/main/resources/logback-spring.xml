@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener" />
+
+
+    <!-- 1. Receiver Server Logger (receiver.log) -->
+    <appender name="RECEIVER_LOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${PULSE_LOG_HOME:-logs}/receiver/receiver.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${PULSE_LOG_HOME:-logs}/receiver/receiver.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>5</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 2. SiftingAppender for dynamic service-based log separation -->
+    <appender name="SIFT" class="ch.qos.logback.classic.sift.SiftingAppender">
+        <discriminator>
+            <key>service_name</key>
+            <defaultValue>unknown-service</defaultValue>
+        </discriminator>
+        <sift>
+            <appender name="FILE-${service_name}" class="ch.qos.logback.core.rolling.RollingFileAppender">
+                <file>${PULSE_LOG_HOME:-logs}/${service_name}/${service_name}.log</file>
+                <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                    <fileNamePattern>${PULSE_LOG_HOME:-logs}/${service_name}/${service_name}.%d{yyyy-MM-dd}.log</fileNamePattern>
+                    <maxHistory>30</maxHistory>
+                </rollingPolicy>
+                <encoder>
+                    <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+                </encoder>
+            </appender>
+        </sift>
+    </appender>
+
+    <!-- 3. ServerSocketReceiver on port 4560 (Initialized via LogbackReceiverConfig.java) -->
+
+    <!-- Console Appender (for development visibility) -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Root settings -->
+    <root level="DEBUG">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="RECEIVER_LOG" />
+        <appender-ref ref="SIFT" />
+    </root>
+
+    <!-- Prevent receiver package logs from going into SIFT for clarity -->
+    <logger name="com.pulsecheck" level="DEBUG" additivity="false">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="RECEIVER_LOG" />
+        <appender-ref ref="SIFT" /> <!-- Added SIFT here as well -->
+    </logger>
+
+</configuration>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>500 — PulseCheck</title>
+  <th:block th:replace="~{fragments/error-base :: errorHead}"/>
+  <style>
+    @keyframes static-noise {
+      0%   { text-shadow: 0 0 16px #ff3355, 0 0 40px rgba(255,51,85,0.3), 2px 0 #ff3355; }
+      25%  { text-shadow: -2px 0 #ff3355, 0 0 16px #ff3355; }
+      50%  { text-shadow: 0 0 16px #ff3355, 0 0 40px rgba(255,51,85,0.3); }
+      75%  { text-shadow: 2px 2px #ff3355, 0 0 10px rgba(255,51,85,0.2); }
+      100% { text-shadow: 0 0 16px #ff3355, 0 0 40px rgba(255,51,85,0.3); }
+    }
+    .noise { animation: static-noise 0.5s step-end infinite; }
+  </style>
+</head>
+<body>
+<div class="err-wrap">
+
+  <div class="px-card px-card-red">
+    <div class="err-code err-code-red noise">500</div>
+    <div class="err-title" style="color:#ff4d6a">CORE DUMP</div>
+
+    <div class="ascii-art" style="color:#3d0a18;margin-bottom:16px">
+      ┌─────────────────────────┐<br/>
+      │  !! SYSTEM FAILURE !!  │<br/>
+      │&nbsp;&nbsp;▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓&nbsp;&nbsp;│<br/>
+      │&nbsp;&nbsp;KERNEL PANIC  0xDEAD &nbsp;│<br/>
+      └─────────────────────────┘
+    </div>
+
+    <hr class="px-hr px-hr-red"/>
+
+    <p style="font-size:12px;color:#7a3344;margin:0 0 12px">
+      서버 내부 오류가 발생했습니다.<br/>
+      잠시 후 다시 시도하거나 관리자에게 문의하세요.
+    </p>
+
+    <!-- 에러 메시지 (있을 경우만 표시) -->
+    <div class="err-detail" style="border-color:#2d0a15;background:#0a0105"
+         th:if="${message != null and !#strings.isEmpty(message)}">
+      <span style="color:#4d1a26">ERROR :</span>
+      <span style="color:#7a3344;word-break:break-all" th:text="${message}">Internal Server Error</span>
+    </div>
+
+    <div class="err-detail" style="border-color:#2d0a15;background:#0a0105;margin-top:4px">
+      <span style="color:#4d1a26">PATH&nbsp;:</span>
+      <span style="color:#7a3344" th:text="${path}">unknown</span><br/>
+      <span style="color:#4d1a26">STATUS:</span> <span style="color:#ff4d6a">500 Internal Server Error</span>
+    </div>
+
+    <hr class="px-hr px-hr-red"/>
+
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <a href="/" class="px-btn">▶ HOME</a>
+      <a href="javascript:location.reload()" class="px-btn px-btn-red">↺ RETRY</a>
+    </div>
+  </div>
+
+  <div class="err-footer" style="color:#2d0a14">
+    SYSTEM ERROR LOGGED&nbsp;&nbsp;|&nbsp;&nbsp;ERROR CODE 500&nbsp;&nbsp;|&nbsp;&nbsp;
+    <span th:text="${#temporals.format(#temporals.createNow(), 'HH:mm:ss')}">--:--:--</span>
+    <span class="blink" style="color:#5a1a2d">▋</span>
+  </div>
+</div>
+</body>
+</html>
